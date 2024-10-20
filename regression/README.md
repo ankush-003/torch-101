@@ -73,4 +73,9 @@ predicted = model(torch.from_numpy(x_test).float()).detach().numpy()
 ## Saving and Loading Model
 
 - `torch.save(model.state_dict(), 'model.ckpt')` -> Save model state dictionary to file.
+- `torch.load('model.ckpt')` -> Load model state dictionary from file.
 - `model.load_state_dict(torch.load('model.ckpt'))` -> Load model state dictionary from file.
+
+## References
+- [Pytorch Cheat Sheet](https://pytorch.org/tutorials/beginner/ptcheat.html)
+- [Zero to Mastery Learn PyTorch for Deep Learning](https://www.learnpytorch.io/01_pytorch_workflow/)
