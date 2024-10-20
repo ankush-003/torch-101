@@ -53,3 +53,24 @@ for epoch in range(num_epochs):
 
     optimizer.step()
 ``` 
+
+![Training Loop](../images/train_loop.png)
+
+## Inferece
+
+1. Load Model
+2. Set Model to Evaluation Mode
+3. Make Predictions
+
+```python
+model = LinearRegression(input_dim, output_dim)`
+model.load_state_dict(torch.load('model.ckpt'))
+model.eval()
+
+predicted = model(torch.from_numpy(x_test).float()).detach().numpy()
+``` 
+
+## Saving and Loading Model
+
+- `torch.save(model.state_dict(), 'model.ckpt')` -> Save model state dictionary to file.
+- `model.load_state_dict(torch.load('model.ckpt'))` -> Load model state dictionary from file.
