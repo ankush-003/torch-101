@@ -138,7 +138,7 @@ def linear_activation_forward(A_prev: torch.Tensor, W: torch.Tensor, b: torch.Te
 
     return A, cache
 
-def model_forward(X: torch.Tensor, params: dict):
+def model_forward(X: torch.Tensor, params: dict): 
     """
     Forward propagation for the entire neural network.
     X: input data.
@@ -160,12 +160,12 @@ def model_forward(X: torch.Tensor, params: dict):
         caches.append(cache)
 
     # Output layer
-    AL, cache = linear_activation_forward(A, params[f'W{L}'], params[f'b{L}'], "sigmoid")
+    AL, cache = linear_activation_forward(A, params[f'W{L}'], params[f'b{L}'], "sigmoid" if params[f'W{L}'].shape[0] == 1 else "softmax")
     caches.append(cache)
 
     return AL, caches
 
-def binary_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor):
+def binary_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor, device='cpu'):
     """
     Compute the binary cross-entropy loss.
     AL: probability vector corresponding to the label predictions.
@@ -174,11 +174,13 @@ def binary_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor):
     """
     m = Y.shape[1]
     epsilon = 1e-15
-    AL = torch.clamp(AL, epsilon, 1 - epsilon)  # Avoid log(0)
+    AL = torch.clamp(AL, epsilon, 1 - epsilon)  # Avoid division by zero
+    AL = AL.to(device)
+
     loss = -1/m * torch.sum(Y * torch.log(AL) + (1 - Y) * torch.log(1 - AL))
     return loss.squeeze()
 
-def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
+def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor, device='cpu'):
     """
     Compute the gradient of the cost with respect to AL for binary cross-entropy loss.
     AL: probability vector corresponding to the label predictions.
@@ -188,6 +190,7 @@ def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
     m = Y.shape[1]
     epsilon = 1e-15
     AL = torch.clamp(AL, epsilon, 1 - epsilon)  # Avoid division by zero
+    AL = AL.to(device)
     dAL = - (torch.div(Y, AL) - torch.div(1 - Y, 1 - AL))
     return dAL
 
@@ -275,9 +278,8 @@ def model_backward(AL: torch.Tensor, Y: torch.Tensor, caches, device='cpu'):
     """
     grads = {}
     L = len(caches)  # the number of layers
-    Y = Y.view(AL.shape) # make sure Y is the same shape as AL
     
-    dAL = binary_cross_entropy_loss_backward(AL, Y)
+    dAL = binary_cross_entropy_loss_backward(AL, Y, device) if Y.shape[0] == 1 else categorical_cross_entropy_loss_backward(AL, Y, device)
     activation = "sigmoid"
 
     # Lth layer (softmax/sigmoid -> linear) gradients

@@ -37,9 +37,7 @@ class NeuralNetwork:
         Y.to(self.device)
 
         X = X.T
-
-        # If Y is 1-dimensional, reshape it to (1, n_samples)
-        Y = Y.view(1, -1) if len(Y.shape) == 1 else Y.T
+        Y = Y.T
 
         costs = []
         for i in tqdm(range(num_iterations), desc='Epochs ', leave=False):
@@ -48,9 +46,9 @@ class NeuralNetwork:
 
             # Compute cost
             if Y.shape[0] == 1:
-                cost = binary_cross_entropy_loss(AL, Y)
+                cost = binary_cross_entropy_loss(AL, Y, device=self.device)
             else:
-                cost = categorical_cross_entropy_loss(AL, Y)
+                cost = categorical_cross_entropy_loss(AL, Y, device=self.device)
 
             # Backward propagation
             grads = model_backward(AL, Y, caches, device=self.device)
