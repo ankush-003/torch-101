@@ -50,10 +50,10 @@ class NeuralNetwork:
             AL, caches = model_forward(X, self.params)
 
             # Compute cost
-            cost = categorical_cross_entropy_loss(AL, Y)
+            cost = categorical_cross_entropy_loss(AL, Y, device=self.device)
 
             # Backward propagation
-            grads = model_backward(AL, Y, caches)
+            grads = model_backward(AL, Y, caches, device=self.device)
             self.params = update_parameters(self.params, grads, learning_rate)
 
             # Print the cost every 100 iterations

@@ -194,7 +194,7 @@ def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
 
     return dAL
 
-def categorical_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor):
+def categorical_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor, device='cpu'):
     """
     Compute the categorical cross-entropy loss.
     AL: probability vector corresponding to the label predictions, shape (num_classes, num_examples)
@@ -202,10 +202,13 @@ def categorical_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor):
     Returns: the loss
     """
     m = Y.shape[1]
-    loss = -1/m * torch.sum(Y * torch.log(AL + 1e-8))  # adding small epsilon to avoid log(0)
+    epsilon = 1e-15
+    AL_clipped = torch.clamp(AL, min=epsilon, max=1-epsilon)
+    AL_clipped = AL_clipped.to(device)
+    loss = -1/m * torch.sum(Y * torch.log(AL_clipped))
     return loss.squeeze()
 
-def categorical_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
+def categorical_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor, device='cpu'):
     """
     Compute the gradient of the cost with respect to AL for categorical cross-entropy loss.
     AL: probability vector corresponding to the label predictions, shape (num_classes, num_examples)
@@ -213,7 +216,10 @@ def categorical_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
     Returns: the gradient of the cost with respect to AL
     """
     m = Y.shape[1]
-    dAL = - (torch.div(Y, AL + 1e-8))  # adding small epsilon to avoid division by zero
+    epsilon = 1e-15
+    AL_clipped = torch.clamp(AL, min=epsilon, max=1-epsilon)
+    AL_clipped = AL_clipped.to(device)
+    dAL = -1/m * Y / AL_clipped
     return dAL
 
 def linear_backward(dZ: torch.Tensor, cache: dict):
@@ -262,7 +268,7 @@ def linear_activation_backward(dA: torch.Tensor, cache: dict, activation: str):
 
     return dA_prev, dW, db
 
-def model_backward(AL: torch.Tensor, Y: torch.Tensor, caches):
+def model_backward(AL: torch.Tensor, Y: torch.Tensor, caches, device='cpu'):
     """
     Backpropagation for the entire neural network.
     AL: probability vector, output of the forward propagation.
@@ -278,7 +284,7 @@ def model_backward(AL: torch.Tensor, Y: torch.Tensor, caches):
         dAL = binary_cross_entropy_loss_backward(AL, Y)
         activation = "sigmoid"
     else:
-        dAL = categorical_cross_entropy_loss_backward(AL, Y)  # for multi-class classification
+        dAL = categorical_cross_entropy_loss_backward(AL, Y, device=device)
         activation = "softmax"
 
     # Lth layer (softmax/sigmoid -> linear) gradients
