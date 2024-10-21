@@ -1,6 +1,6 @@
 import torch
 from tqdm.notebook import tqdm
-from functions import model_forward, categorical_cross_entropy_loss, model_backward, update_parameters, softmax
+from functions import *
 
 class NeuralNetwork:
     def __init__(self, layer_dims: list[int]):
@@ -39,10 +39,7 @@ class NeuralNetwork:
         X = X.T
 
         # If Y is 1-dimensional, reshape it to (1, n_samples)
-        if Y.dim() == 1:
-            Y = Y.unsqueeze(0)
-        else:
-            Y = Y.T
+        Y = Y.view(1, -1) if len(Y.shape) == 1 else Y.T
 
         costs = []
         for i in tqdm(range(num_iterations), desc='Epochs ', leave=False):
@@ -50,10 +47,17 @@ class NeuralNetwork:
             AL, caches = model_forward(X, self.params)
 
             # Compute cost
-            cost = categorical_cross_entropy_loss(AL, Y, device=self.device)
+            if Y.shape[0] == 1:
+                cost = binary_cross_entropy_loss(AL, Y)
+            else:
+                cost = categorical_cross_entropy_loss(AL, Y)
 
             # Backward propagation
             grads = model_backward(AL, Y, caches, device=self.device)
+
+            for key in grads:
+                    torch.nn.utils.clip_grad_norm_(grads[key], max_norm=1.0)
+                    
             self.params = update_parameters(self.params, grads, learning_rate)
 
             # Print the cost every 100 iterations
@@ -74,3 +78,16 @@ class NeuralNetwork:
         X = X.T  # Reshape X to (n_features, n_samples)
         AL, _ = model_forward(X, self.params)
         return AL.T  # Reshape output back to (n_samples, n_classes)
+    
+    def evaluate(self, X: torch.Tensor, Y: torch.Tensor):
+        """
+        Evaluate the model's performance.
+        X: input data.
+        Y: true labels.
+        Returns: accuracy of the model.
+        """
+        predictions = self.predict(X)
+        Y = Y.view(-1, 1)
+        predicted_classes = (predictions > 0.5).float()
+        accuracy = (predicted_classes == Y).float().mean()
+        return accuracy.item()

@@ -160,7 +160,7 @@ def model_forward(X: torch.Tensor, params: dict):
         caches.append(cache)
 
     # Output layer
-    AL, cache = linear_activation_forward(A, params[f'W{L}'], params[f'b{L}'], "sigmoid" if params[f'W{L}'].shape[0] == 1 else "softmax")
+    AL, cache = linear_activation_forward(A, params[f'W{L}'], params[f'b{L}'], "sigmoid")
     caches.append(cache)
 
     return AL, caches
@@ -172,14 +172,11 @@ def binary_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor):
     Y: true "label" vector.
     Returns: the loss.
     """
-
     m = Y.shape[1]
-
-    # cross-entropy loss
+    epsilon = 1e-15
+    AL = torch.clamp(AL, epsilon, 1 - epsilon)  # Avoid log(0)
     loss = -1/m * torch.sum(Y * torch.log(AL) + (1 - Y) * torch.log(1 - AL))
-    loss = torch.squeeze(loss) # To make sure the loss's shape is what we expect (e.g. this turns [[17]] into 17).
-
-    return loss
+    return loss.squeeze()
 
 def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
     """
@@ -188,10 +185,10 @@ def binary_cross_entropy_loss_backward(AL: torch.Tensor, Y: torch.Tensor):
     Y: true "label" vector.
     Returns: the gradient of the cost with respect to AL.
     """
-
     m = Y.shape[1]
+    epsilon = 1e-15
+    AL = torch.clamp(AL, epsilon, 1 - epsilon)  # Avoid division by zero
     dAL = - (torch.div(Y, AL) - torch.div(1 - Y, 1 - AL))
-
     return dAL
 
 def categorical_cross_entropy_loss(AL: torch.Tensor, Y: torch.Tensor, device='cpu'):
@@ -237,7 +234,7 @@ def linear_backward(dZ: torch.Tensor, cache: dict):
     m = A_prev.shape[1]
 
     dW = 1/m * torch.matmul(dZ, A_prev.T)
-    db = 1/m * torch.sum(dZ, axis=1, keepdim=True)
+    db = 1/m * torch.sum(dZ, dim=1, keepdim=True)
     dA_prev = torch.matmul(W.T, dZ)
 
     return dA_prev, dW, db
@@ -278,14 +275,10 @@ def model_backward(AL: torch.Tensor, Y: torch.Tensor, caches, device='cpu'):
     """
     grads = {}
     L = len(caches)  # the number of layers
-
-    # If it's a binary classification, use binary cross-entropy gradient
-    if AL.shape[0] == 1:
-        dAL = binary_cross_entropy_loss_backward(AL, Y)
-        activation = "sigmoid"
-    else:
-        dAL = categorical_cross_entropy_loss_backward(AL, Y, device=device)
-        activation = "softmax"
+    Y = Y.view(AL.shape) # make sure Y is the same shape as AL
+    
+    dAL = binary_cross_entropy_loss_backward(AL, Y)
+    activation = "sigmoid"
 
     # Lth layer (softmax/sigmoid -> linear) gradients
     current_cache = caches[L - 1]
