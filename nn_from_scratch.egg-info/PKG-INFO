@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: nn_from_scratch
+Version: 0.3
+Summary: Neural Networks from Scratch
+Author: Ankush H V
+License: MIT
+License-File: LICENCE.txt
+Requires-Dist: fastapi
+Requires-Dist: h5py
+Requires-Dist: numpy
+Requires-Dist: torch
+Requires-Dist: gradio
+Requires-Dist: ipywidgets
+Requires-Dist: pillow
+Requires-Dist: matplotlib
+Requires-Dist: scikit-learn
+Requires-Dist: scipy
+Requires-Dist: seaborn

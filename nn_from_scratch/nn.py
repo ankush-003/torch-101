@@ -1,6 +1,6 @@
 import torch
 from tqdm.notebook import tqdm
-from functions import *
+from .functions import *
 
 class NeuralNetwork:
     def __init__(self, layer_dims: list[int]):

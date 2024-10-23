@@ -1,4 +1,5 @@
 import torch
+from nn
 # using Apple Metal GPU
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
