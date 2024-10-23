@@ -3,10 +3,12 @@
 
 ![nn_from_scratch](./images/catvdog_train.gif)
 
-install now
+## 💻 Try locally
+
 ```bash
-    pip install nn-from-scratch==0.3
+pip install nn-from-scratch==0.3
 ``` 
+
 ## References
 
 - [Pytorch Documentation](https://pytorch.org/resources/)
