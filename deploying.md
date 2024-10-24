@@ -48,7 +48,7 @@ setup(
 python setup.py sdist bdist_wheel
 ```
 
-## 🚀 Upload package to PyP
+## 🚀 Upload package to PyPI
 
 1. Create an account on [PyPI](https://pypi.org/account/register/).
 2. Get your API token from [here](https://pypi.org/manage/account/).
