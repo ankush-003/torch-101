@@ -26,16 +26,6 @@ jobs:
                 python -m pip install --upgrade pip
                 pip install setuptools wheel twine==5.1.1
                 if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-            - name: Increment version
-              id: update_version
-              run: |
-                VERSION=$(grep -oP "(?<=version=')\d+\.\d+\.\d+" setup.py)
-                IFS='.' read -r -a version_parts <<< "$VERSION"
-                PATCH_VERSION=$((version_parts[2] + 1))
-                NEW_VERSION="${version_parts[0]}.${version_parts[1]}.$PATCH_VERSION"
-                sed -i "s/version='$VERSION'/version='$NEW_VERSION'/" setup.py
-                echo "New version: $NEW_VERSION"
-                echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
             - name: Build distribution 📦
               run: |
                 python setup.py sdist bdist_wheel
