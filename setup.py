@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nn_from_scratch',
-    version='0.4',
+    version='0.4.2',
     author='Ankush H V',
     license='MIT',
     description='Neural Networks from Scratch',
